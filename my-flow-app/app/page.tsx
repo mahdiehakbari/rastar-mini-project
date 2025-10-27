@@ -1,65 +1,91 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState } from 'react';
+import ReactFlow, {
+  Background,
+  Controls,
+  MiniMap,
+  useNodesState,
+  useEdgesState,
+  Node,
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+import FormPanel from './components/FormPanel';
 
 export default function Home() {
+  const initialNodes: Node[] = [
+    {
+      id: '1',
+      type: 'input',
+      data: { label: '👋 Start Form' },
+      position: { x: 50, y: 0 },
+    },
+    { id: '2', data: { label: '🧍 Name Field' }, position: { x: 50, y: 100 } },
+    { id: '3', data: { label: '📧 Email Field' }, position: { x: 50, y: 200 } },
+    {
+      id: '4',
+      data: { label: '💬 Message Field' },
+      position: { x: 50, y: 300 },
+    },
+    {
+      id: '5',
+      type: 'output',
+      data: { label: '✅ Submit' },
+      position: { x: 50, y: 400 },
+    },
+  ];
+
+  const initialEdges = [
+    { id: 'e1-2', source: '1', target: '2' },
+    { id: 'e2-3', source: '2', target: '3' },
+    { id: 'e3-4', source: '3', target: '4' },
+    { id: 'e4-5', source: '4', target: '5' },
+  ];
+
+  const [nodes, , onNodesChange] = useNodesState(initialNodes);
+  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [formData, setFormData] = useState<Record<string, string>>({});
+
+  const handleNodeClick = (_: React.MouseEvent, node: Node) =>
+    setSelectedNode(node);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className='flex h-screen'>
+      {/* نودهای فلو */}
+      <div className='flex-1 bg-gray-100'>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onNodeClick={handleNodeClick}
+          fitView
+        >
+          <MiniMap />
+          <Controls />
+          <Background gap={16} color='black' />
+        </ReactFlow>
+      </div>
+
+      {/* فرم تعاملی */}
+      <div className='w-80 bg-gray-50 border-l border-gray-200'>
+        <FormPanel
+          selectedNode={selectedNode}
+          formData={formData}
+          setFormData={setFormData}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        {Object.keys(formData).length > 0 && (
+          <div className='p-4'>
+            <h4 className='font-bold mb-2'>Form Data Preview:</h4>
+            <pre className='text-sm bg-gray-100 p-2 rounded text-black'>
+              {JSON.stringify(formData, null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
